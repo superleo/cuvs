@@ -4,7 +4,6 @@
  */
 
 #include <gtest/gtest.h>
-#include <cuda_runtime.h>
 #include <cuvs/core/c_api.h>
 
 /**
@@ -25,12 +24,12 @@ TEST_F(CApiResourceLifecycleTest, SetGetStream)
   cuvsResources_t res;
   ASSERT_EQ(cuvsResourcesCreate(&res), CUVS_SUCCESS);
 
-  cudaStream_t stream;
+  cuvsStream_t stream;
   cudaStreamCreate(&stream);
 
   ASSERT_EQ(cuvsStreamSet(res, stream), CUVS_SUCCESS);
 
-  cudaStream_t retrieved;
+  cuvsStream_t retrieved;
   ASSERT_EQ(cuvsStreamGet(res, &retrieved), CUVS_SUCCESS);
   ASSERT_EQ(retrieved, stream);
 

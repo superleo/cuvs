@@ -17,6 +17,7 @@ project(
   VERSION "${RAPIDS_VERSION}"
   LANGUAGES CXX C
 )
+include(../cpp/cmake/modules/ConfigureBackend.cmake)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
 # Disable C++20 module scanning (not using modules, just C++20 features)
@@ -32,6 +33,11 @@ option(BUILD_CAGRA_HNSWLIB "Build CAGRA+hnswlib interface" ON)
 option(BUILD_MG_ALGOS "Build with multi-GPU support" ON)
 
 option(CUVSC_STATIC_CUVS_LIBRARY "Link against statical version of libcuvs" OFF)
+
+if(CUVS_BACKEND_IS_MUSA)
+  message(STATUS "cuVS C API: forcing BUILD_TESTS=OFF for current MUSA integration phase")
+  set(BUILD_TESTS OFF)
+endif()
 
 # Check if cuVS is already available. If so, it is the user's responsibility to ensure that the
 # CMake package is also available at build time of the Python cuvs package.
@@ -54,7 +60,7 @@ rapids_cmake_build_type(Release)
 # this is needed for clang-tidy runs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(NOT DEFINED CUVS_CXX_FLAGS)
+if(NOT DEFINED CUVS_CXX_FLAGS AND CUVS_BACKEND_IS_CUDA)
   include(../cpp/cmake/modules/ConfigureCUDA.cmake)
 endif()
 
@@ -205,10 +211,12 @@ endif()
 # ##################################################################################################
 # * build tests ----------------------------------------------------
 if(BUILD_TESTS)
-  include(rapids-cuda)
-  rapids_cuda_init_architectures(CUVS_C)
-  enable_language(CUDA)
-  find_package(CUDAToolkit REQUIRED)
+  if(CUVS_BACKEND_IS_CUDA)
+    include(rapids-cuda)
+    rapids_cuda_init_architectures(CUVS_C)
+    enable_language(CUDA)
+    find_package(CUDAToolkit REQUIRED)
+  endif()
 
   enable_testing()
   add_subdirectory(tests)

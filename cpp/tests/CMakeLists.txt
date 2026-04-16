@@ -111,6 +111,13 @@ ConfigureTest(
 )
 
 ConfigureTest(
+  NAME BACKEND_ADAPTER_TEST
+  PATH core/backend/test_runtime_adapter.cu
+  GPUS 1
+  PERCENT 100
+)
+
+ConfigureTest(
   NAME NEIGHBORS_TIERED_INDEX_TEST
   PATH neighbors/tiered_index.cu
   GPUS 1

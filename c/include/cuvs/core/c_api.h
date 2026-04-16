@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <cuda_runtime.h>
+#include <cuvs/core/c_api_compat.h>
 #include <dlpack/dlpack.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -94,23 +94,23 @@ cuvsError_t cuvsResourcesCreate(cuvsResources_t* res);
 cuvsError_t cuvsResourcesDestroy(cuvsResources_t res);
 
 /**
- * @brief Set cudaStream_t on cuvsResources_t to queue CUDA kernels on APIs
+ * @brief Set cuvsStream_t on cuvsResources_t to queue backend kernels on APIs
  *        that accept a cuvsResources_t handle
  *
  * @param[in] res cuvsResources_t opaque C handle
- * @param[in] stream cudaStream_t stream to queue CUDA kernels
+ * @param[in] stream cuvsStream_t stream to queue kernels
  * @return cuvsError_t
  */
-cuvsError_t cuvsStreamSet(cuvsResources_t res, cudaStream_t stream);
+cuvsError_t cuvsStreamSet(cuvsResources_t res, cuvsStream_t stream);
 
 /**
- * @brief Get the cudaStream_t from a cuvsResources_t
+ * @brief Get the cuvsStream_t from a cuvsResources_t
  *
  * @param[in] res cuvsResources_t opaque C handle
- * @param[out] stream cudaStream_t stream to queue CUDA kernels
+ * @param[out] stream cuvsStream_t stream to queue kernels
  * @return cuvsError_t
  */
-cuvsError_t cuvsStreamGet(cuvsResources_t res, cudaStream_t* stream);
+cuvsError_t cuvsStreamGet(cuvsResources_t res, cuvsStream_t* stream);
 
 /**
  * @brief Syncs the current CUDA stream on the resources object

@@ -96,7 +96,7 @@ extern "C" cuvsError_t cuvsMultiGpuResourcesSetMemoryPool(cuvsResources_t res,
   });
 }
 
-extern "C" cuvsError_t cuvsStreamSet(cuvsResources_t res, cudaStream_t stream)
+extern "C" cuvsError_t cuvsStreamSet(cuvsResources_t res, cuvsStream_t stream)
 {
   return cuvs::core::translate_exceptions([=] {
     auto res_ptr = reinterpret_cast<raft::resources*>(res);
@@ -104,7 +104,7 @@ extern "C" cuvsError_t cuvsStreamSet(cuvsResources_t res, cudaStream_t stream)
   });
 }
 
-extern "C" cuvsError_t cuvsStreamGet(cuvsResources_t res, cudaStream_t* stream)
+extern "C" cuvsError_t cuvsStreamGet(cuvsResources_t res, cuvsStream_t* stream)
 {
   return cuvs::core::translate_exceptions([=] {
     auto res_ptr = reinterpret_cast<raft::resources*>(res);

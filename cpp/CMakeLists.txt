@@ -11,12 +11,13 @@ include(rapids-export)
 include(rapids-find)
 
 option(BUILD_CPU_ONLY "Build CPU only components. Applies to CUVS benchmarks currently" OFF)
+include(cmake/modules/ConfigureBackend.cmake)
 
 # workaround for rapids_cuda_init_architectures not working for arch detection with
 # enable_language(CUDA)
 set(lang_list "CXX" "C")
 
-if(NOT BUILD_CPU_ONLY)
+if(NOT BUILD_CPU_ONLY AND CUVS_BACKEND_IS_CUDA)
   include(rapids-cuda)
   rapids_cuda_init_architectures(CUVS)
   list(APPEND lang_list "CUDA")
@@ -67,6 +68,11 @@ option(DISABLE_OPENMP "Disable OpenMP" OFF)
 option(CUVS_COMPILE_DYNAMIC_ONLY "Only build the shared library and skip the static library." OFF)
 option(CUVS_NVTX "Enable nvtx markers" OFF)
 option(CUVS_RAFT_CLONE_ON_PIN "Explicitly clone RAFT branch when pinned to non-feature branch" ON)
+
+if(CUVS_BACKEND_IS_MUSA)
+  message(STATUS "cuVS: forcing BUILD_CPU_ONLY=ON for current MUSA integration phase")
+  set(BUILD_CPU_ONLY ON)
+endif()
 
 if(BUILD_CPU_ONLY)
   set(BUILD_SHARED_LIBS OFF)
@@ -151,7 +157,7 @@ if(CUDA_STATIC_MATH_LIBRARIES)
   set(_ctk_static_suffix "_static")
 endif()
 
-if(NOT BUILD_CPU_ONLY)
+if(NOT BUILD_CPU_ONLY AND CUVS_BACKEND_IS_CUDA)
   # CUDA runtime
   rapids_cuda_init_runtime(USE_STATIC ${CUDA_STATIC_RUNTIME})
   # * find CUDAToolkit package
@@ -178,7 +184,14 @@ if(NOT DISABLE_OPENMP)
   endif()
 endif()
 
-include(cmake/modules/ConfigureCUDA.cmake)
+if(CUVS_BACKEND_IS_CUDA)
+  include(cmake/modules/ConfigureCUDA.cmake)
+else()
+  set(CUVS_CXX_FLAGS)
+  set(CUVS_CUDA_FLAGS)
+  set(CUVS_DEBUG_CUDA_FLAGS)
+endif()
+cuvs_create_backend_aliases()
 
 # ##################################################################################################
 # * Requirements -------------------------------------------------------------

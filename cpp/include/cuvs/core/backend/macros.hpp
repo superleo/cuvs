@@ -8,6 +8,7 @@
 #include <cuvs/core/backend/runtime.hpp>
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 
 /**
  * Backend-neutral error-checking macros.

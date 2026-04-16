@@ -2,7 +2,25 @@
 
 ## Purpose
 
-Define an implementation architecture that supports CUDA and MUSA backends with minimal API churn and test-first delivery.
+Define an implementation architecture that supports CUDA and MUSA backends with minimal API churn and test-first delivery, while providing a clear migration path for every user persona.
+
+## User-Facing Strategy
+
+The full user-scenario analysis and migration guide lives in:
+`docs/source/musa/user_scenarios_and_migration.md`
+
+Key decisions that shape the system design:
+
+- **Separate package identity**: the MUSA build ships as **muVS** (`muvs` package,
+  `muvs::` namespace, `#include <muvs/...>`) to avoid confusion with cuVS on
+  NVIDIA hardware.
+- **Same source tree**: muVS is a build configuration of the cuVS repository, not a
+  fork. The `CUVS_GPU_BACKEND` flag selects the backend at compile time.
+- **Mechanical migration for users**: switching from cuVS to muVS is a prefix rename
+  (`cuvs` → `muvs`, `cuda` → `musa`) plus relinking. Algorithm APIs, parameter
+  semantics, and data formats are identical.
+- **No mixed-backend process**: cuVS and muVS cannot coexist in one process. Users
+  pick one per deployment.
 
 ## Design Principles
 
@@ -10,6 +28,7 @@ Define an implementation architecture that supports CUDA and MUSA backends with 
 - Introduce backend abstraction at boundaries, not in domain logic.
 - Deliver in small vertical slices validated by tests before expansion.
 - Preserve public API contracts unless explicitly versioned.
+- Ship muVS as a distinct package so CUDA users see zero change.
 
 ## DDD Framing
 
@@ -38,9 +57,13 @@ Define an implementation architecture that supports CUDA and MUSA backends with 
 ## Ubiquitous Language
 
 - Backend: GPU runtime family (`CUDA` or `MUSA`).
+- cuVS: the CUDA-backend build, shipped under the `cuvs` name.
+- muVS: the MUSA-backend build, shipped under the `muvs` name.
 - Runtime Adapter: wrapper layer for stream/memory/event operations.
 - Feature Gate: compile-time or runtime switch for unsupported capability.
 - MVP Vertical Slice: smallest end-to-end user-visible function with tests.
+- Prefix Rename: the mechanical `cuvs` → `muvs` transformation applied to
+  headers, namespaces, symbols, and package names during MUSA build.
 
 ## Target Architecture
 
@@ -110,6 +133,34 @@ Concrete adapters:
 4. Keep feature-gated fallback for unsupported paths.
 5. Run dual-backend test subset; merge only if both pass required gates.
 
+## Packaging Architecture
+
+### Build-time output mapping
+
+When `CUVS_GPU_BACKEND=MUSA`:
+- Library: `libmuvs.so` / `libmuvs_c.so`
+- Headers installed under: `include/muvs/`
+- Python package: `muvs`
+- CMake export: `find_package(muvs)`
+- C API prefix: `muvs*` / `MUVS_*`
+- C++ namespace: `muvs::`
+
+When `CUVS_GPU_BACKEND=CUDA` (default, unchanged):
+- Library: `libcuvs.so` / `libcuvs_c.so`
+- Headers installed under: `include/cuvs/`
+- Python package: `cuvs`
+- CMake export: `find_package(cuvs)`
+- C API prefix: `cuvs*` / `CUVS_*`
+- C++ namespace: `cuvs::`
+
+### Implementation strategy for prefix rename
+
+The rename is applied at build/packaging time, not in source:
+1. Source continues to use `cuvs` names as the canonical spelling.
+2. A build-time transform (CMake configure_file or script) generates `muvs`
+   headers, library names, and Python package wrappers from the same source.
+3. This avoids source-level duplication and keeps a single codebase.
+
 ## Non-Goals (MVP)
 
 - Full feature parity across all ANN algorithms.
@@ -124,6 +175,8 @@ Concrete adapters:
 - ADR-003: Runtime adapter interface surface and error model.
 - ADR-004: Feature-gate policy for unsupported modules.
 - ADR-005: CI gating policy for CUDA and MUSA.
+- ADR-006: Separate package identity (muVS) for MUSA builds.
+- ADR-007: Build-time prefix rename strategy (source stays `cuvs`, output `muvs`).
 
 ## MVP System Boundaries
 

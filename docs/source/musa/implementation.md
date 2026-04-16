@@ -164,3 +164,31 @@ ctest --test-dir build-cuda --output-on-failure -R "C_API_LIFECYCLE_TEST"
 | C API lifecycle tests pass | `test_c_api_resource_lifecycle.cu` (8 test cases) |
 | No CUDA types in new public headers | `c_api_compat.h` uses `cuvsStream_t` |
 | CUDA default unchanged | All new code is additive; no existing file modified |
+
+## Phase 02 Integration Update
+
+The next phase (integration wiring in TDD) is implemented and recorded in:
+
+- `docs/source/musa/phase_02_tdd_integration.md`
+
+That phase integrates backend-aware CMake guards, registers the two new contract test targets, and documents red/green/refactor steps plus verification outcomes.
+
+## User Scenarios and Migration Guide
+
+A comprehensive user-scenario analysis covering all personas (Python end-user,
+C/C++ developer, Rust/Go/Java binding user, build-from-source integrator) and
+the separate-package (muVS) strategy is documented in:
+
+- `docs/source/musa/user_scenarios_and_migration.md`
+
+The system design doc has been updated to reference this strategy and include
+packaging architecture decisions (ADR-006, ADR-007).
+
+## Phase 03 Stream API Update
+
+The next phase after integration (C API stream neutralization in TDD) is implemented and recorded in:
+
+- `docs/source/musa/phase_03_tdd_c_api_stream_neutralization.md`
+
+That phase migrates the public C API stream set/get boundary from `cudaStream_t` to
+backend-neutral `cuvsStream_t`, aligns implementation signatures, and updates lifecycle tests.

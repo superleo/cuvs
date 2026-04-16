@@ -71,6 +71,7 @@ function(ConfigureTest)
 endfunction()
 
 ConfigureTest(NAME INTEROP_TEST PATH core/interop.cu)
+ConfigureTest(NAME C_API_LIFECYCLE_TEST PATH core/test_c_api_resource_lifecycle.cu)
 ConfigureTest(
   NAME DISTANCE_C_TEST PATH distance/run_pairwise_distance_c.c distance/pairwise_distance_c.cu
 )
@@ -94,7 +95,9 @@ endif()
 
 ConfigureTest(NAME cuvs_c_headers PATH core/headers.c)
 ConfigureTest(NAME cuvs_c_test PATH core/c_api.c)
-target_link_libraries(cuvs_c_test PRIVATE CUDA::cudart)
+if(CUVS_BACKEND_IS_CUDA)
+  target_link_libraries(cuvs_c_test PRIVATE CUDA::cudart)
+endif()
 ConfigureTest(NAME cuvs_c_neighbors_test PATH neighbors/c_api.c)
 
 # ##################################################################################################
