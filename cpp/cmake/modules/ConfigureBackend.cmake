@@ -94,6 +94,9 @@ function(cuvs_create_backend_aliases)
   endif()
 endfunction()
 
+# Packaging: set library/header/namespace names based on backend.
+include(${CMAKE_CURRENT_LIST_DIR}/ConfigureMusvPackaging.cmake)
+
 # Feature gate helper: use to skip modules not yet ported to MUSA.
 # Usage: cuvs_feature_gate_musa(<feature_name>)
 #   Sets <feature_name>_AVAILABLE to OFF when backend is MUSA and

@@ -218,13 +218,49 @@ cmake --build build
 
 ## What We Provide to Ease Migration
 
-1. **Naming script** — a provided `rename_cuvs_to_muvs.py` that mechanically
-   transforms user code (imports, includes, prefixes).
+1. **Naming script** — `tools/musa/rename_cuvs_to_muvs.py` mechanically
+   transforms user code (imports, includes, prefixes). Run it on your project:
+   ```bash
+   python tools/musa/rename_cuvs_to_muvs.py --src my_app/ --dst my_app_muvs/
+   ```
 2. **Compatibility typedef header** — `muvs/compat/cuvs_compat.h` that maps old
-   `cuvs*` names to `muvs*` for gradual migration.
+   `cuvs*` names to `muvs*` for gradual migration. Include it in your C code:
+   ```c
+   #include <muvs/compat/cuvs_compat.h>
+   // Now cuvsResourcesCreate() etc. resolve to muvsResourcesCreate()
+   ```
 3. **Migration guide per language** — one-page guides for Python, C, C++, Rust, Go.
 4. **Dual-backend CI** — correctness results published for both backends so users
    can verify algorithm parity.
+
+## Quick Start: Building muVS from Source
+
+```bash
+# Clone the repository (same repo as cuVS)
+git clone https://github.com/rapidsai/cuvs.git && cd cuvs
+
+# Configure for MUSA backend
+cmake -S cpp -B build -DCUVS_GPU_BACKEND=MUSA
+
+# Build (produces libmuvs.so instead of libcuvs.so)
+cmake --build build
+
+# Generate renamed headers (optional, for installing muVS headers)
+cmake --build build --target muvs_generate_renamed_headers
+
+# Generate compatibility header
+cmake --build build --target muvs_generate_compat_header
+```
+
+After building, the key naming differences are:
+
+| Artifact | cuVS | muVS |
+|---|---|---|
+| Shared library | `libcuvs.so` | `libmuvs.so` |
+| C API library | `libcuvs_c.so` | `libmuvs_c.so` |
+| Headers | `include/cuvs/` | `include/muvs/` |
+| CMake package | `find_package(cuvs)` | `find_package(muvs)` |
+| C++ namespace | `cuvs::` | `muvs::` |
 
 ---
 

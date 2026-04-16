@@ -192,3 +192,29 @@ The next phase after integration (C API stream neutralization in TDD) is impleme
 
 That phase migrates the public C API stream set/get boundary from `cudaStream_t` to
 backend-neutral `cuvsStream_t`, aligns implementation signatures, and updates lifecycle tests.
+
+## Phase 04 muVS Packaging and Prefix Rename
+
+The next phase implements the build-time prefix rename tooling (ADR-006, ADR-007).
+Full TDD record is in:
+
+- `docs/source/musa/phase_04_tdd_muvs_packaging.md`
+
+### New artifacts
+
+| File | Purpose |
+|---|---|
+| `tools/musa/rename_cuvs_to_muvs.py` | Build-time text/path rename script (`cuvs`→`muvs`) |
+| `tools/musa/test_rename_cuvs_to_muvs.py` | 33 unit/integration tests for the rename script |
+| `tools/musa/test_cmake_muvs_packaging.cmake` | CMake script-mode packaging variable tests |
+| `cpp/cmake/modules/ConfigureMusvPackaging.cmake` | Naming variables + rename custom targets |
+| `c/include/muvs/compat/cuvs_compat.h` | Compatibility header mapping `cuvs*`→`muvs*` |
+
+### Key design decisions
+
+- Source always uses `cuvs` names. The rename happens at build/packaging time.
+- A single compiled regex handles all three case variants (`cuVS`, `CUVS`, `cuvs`).
+- The compatibility header allows existing cuVS code to compile against `libmuvs`
+  without source changes (gradual migration).
+- CMake naming variables (`CUVS_OUTPUT_NAME`, `CUVS_INSTALL_INCLUDE_DIR`, etc.)
+  are set to `muvs` values when `CUVS_GPU_BACKEND=MUSA`.

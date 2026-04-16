@@ -101,11 +101,28 @@ Each PR should run:
 - Preserve golden outputs for MVP tests with versioned tolerance policy.
 - Run nightly extended CUDA + MUSA smoke after each merged port batch.
 
+## L5 - Packaging and Rename Tests
+
+### P1: Rename script correctness
+- Verify content renaming: includes, namespaces, macros, types, CMake targets,
+  Python imports, linker flags, Doxygen comments.
+- Verify no false positives on `cuda`/`CUDA`, `raft`, unrelated words.
+- Verify file/directory path renaming: headers, libraries, CMake config, Python packages.
+- Verify end-to-end tree rename: header, CMake, Python, binary passthrough.
+- Verify compatibility header generation with expected `#define` mappings.
+
+### P2: CMake packaging variables
+- Verify `CUVS_OUTPUT_NAME`, `CUVS_OUTPUT_NAME_C`, `CUVS_EXPORT_SET`,
+  `CUVS_INSTALL_INCLUDE_DIR`, `CUVS_NAMESPACE`, `CUVS_PACKAGE_NAME`
+  are set to `muvs` values when `CUVS_GPU_BACKEND=MUSA`.
+- Verify same variables are set to `cuvs` values when `CUVS_GPU_BACKEND=CUDA`.
+
 ## Coverage Goals (MVP)
 
 - 100% coverage of runtime adapter APIs used by MVP vertical.
 - 100% coverage of C API resource lifecycle paths used by MVP tests.
 - At least one positive and one negative case per public MVP API call.
+- 100% of rename script functions exercised by unit tests.
 
 ## Reporting
 

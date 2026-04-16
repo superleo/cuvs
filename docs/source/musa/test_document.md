@@ -10,7 +10,9 @@ Detailed specification of every test case delivered in the MVP, mapping each to 
 |---|---|---|---|
 | Backend Adapter Contract | `cpp/tests/core/backend/test_runtime_adapter.cu` | 16 | L2 (R1-R4) |
 | C API Resource Lifecycle | `c/tests/core/test_c_api_resource_lifecycle.cu` | 8 | L3 (C1) |
-| **Total** | | **24** | |
+| Rename Script | `tools/musa/test_rename_cuvs_to_muvs.py` | 33 | L5 (P1) |
+| CMake Packaging | `tools/musa/test_cmake_muvs_packaging.cmake` | 2 | L5 (P2) |
+| **Total** | | **59** | |
 
 ---
 
@@ -177,6 +179,84 @@ ctest --test-dir build-musa --output-on-failure -R "BACKEND_ADAPTER_TEST"
 
 ---
 
+## Suite 3: Rename Script Tests (Phase 4)
+
+**File:** `tools/musa/test_rename_cuvs_to_muvs.py`
+**Framework:** Python `unittest`
+**Dependencies:** Python 3.8+, no external packages
+
+### P1: Content Renaming
+
+| # | Test Case | Description | Validates |
+|---|---|---|---|
+| 23 | `test_include_directive_header_path` | `#include <cuvs/...>` → `#include <muvs/...>` | Header include transform |
+| 24 | `test_include_directive_cpp_header` | Same for `.hpp` path | Extension-agnostic |
+| 25 | `test_namespace_declaration` | `namespace cuvs::` → `namespace muvs::` | C++ namespace |
+| 26 | `test_namespace_closing_comment` | `// namespace cuvs::` → `// namespace muvs::` | Comment rename |
+| 27 | `test_qualified_name` | `cuvs::neighbors::` → `muvs::neighbors::` | Fully qualified name |
+| 28 | `test_c_api_function_prefix` | `cuvsResourcesCreate` → `muvsResourcesCreate` | C API function |
+| 29 | `test_c_api_enum_values` | `CUVS_ERROR` → `MUVS_ERROR` | Enum value |
+| 30 | `test_cmake_find_package` | `find_package(cuvs)` → `find_package(muvs)` | CMake integration |
+| 31 | `test_cmake_target_link` | `cuvs::cuvs` → `muvs::muvs` | CMake target |
+| 32 | `test_library_name` | `libcuvs` → `libmuvs` | Library name |
+| 33 | `test_python_import` | `from cuvs.` → `from muvs.` | Python import |
+| 34 | `test_python_import_direct` | `import cuvs` → `import muvs` | Direct import |
+| 35 | `test_macro_prefix` | `CUVS_BACKEND_TRY` → `MUVS_BACKEND_TRY` | Macro rename |
+| 36 | `test_macro_ifdef` | `CUVS_BACKEND_MUSA` → `MUVS_BACKEND_MUSA` | Preprocessor |
+| 37 | `test_doxygen_group` | `cuVS` → `muVS` in docs | Branding |
+| 38 | `test_no_false_positive_on_cuda` | `cuda*` tokens preserved | No false rename |
+| 39 | `test_no_false_positive_on_raft` | `raft` tokens preserved | No false rename |
+| 40 | `test_no_false_positive_on_unrelated_words` | Regular words preserved | Precision |
+| 41 | `test_preserves_cuda_backend_musa_define_value` | `CUVS_BACKEND_MUSA` → `MUVS_BACKEND_MUSA` | Macro name |
+| 42 | `test_multiline_content` | Full multi-line C header rename | End-to-end content |
+| 43 | `test_spdx_header_preserved` | NVIDIA copyright untouched | Copyright safety |
+| 44 | `test_link_flag` | `-lcuvs` → `-lmuvs` | Linker flag |
+
+### P1: Path Renaming
+
+| # | Test Case | Description | Validates |
+|---|---|---|---|
+| 45 | `test_header_path` | `include/cuvs/` → `include/muvs/` | Include dir |
+| 46 | `test_library_filename` | `libcuvs.so` → `libmuvs.so` | Library file |
+| 47 | `test_c_library_filename` | `libcuvs_c.so` → `libmuvs_c.so` | C API library |
+| 48 | `test_cmake_config` | `cuvs-config.cmake` → `muvs-config.cmake` | CMake config |
+| 49 | `test_python_package_dir` | `python/cuvs/` → `python/muvs/` | Python pkg |
+| 50 | `test_no_rename_unrelated` | `raft/core/` preserved | No false rename |
+
+### P1: Tree Rename (Integration)
+
+| # | Test Case | Description | Validates |
+|---|---|---|---|
+| 51 | `test_end_to_end_header_rename` | Rename complete header in temp tree | Full pipeline |
+| 52 | `test_end_to_end_cmake_rename` | Rename CMakeLists.txt in temp tree | CMake pipeline |
+| 53 | `test_end_to_end_python_rename` | Rename Python package in temp tree | Python pipeline |
+| 54 | `test_binary_file_copied_unchanged` | Binary data passes through unchanged | Binary safety |
+
+### P1: Compatibility Header
+
+| # | Test Case | Description | Validates |
+|---|---|---|---|
+| 55 | `test_compat_header_content` | Generated header has `#define` mappings | Compat generation |
+
+**Pass criteria:** All assertions pass, no false positives.
+
+---
+
+## Suite 4: CMake Packaging Tests (Phase 4)
+
+**File:** `tools/musa/test_cmake_muvs_packaging.cmake`
+**Framework:** CMake script mode (`cmake -P`)
+**Dependencies:** CMake 3.26+
+
+| # | Test Case | Backend | Validates |
+|---|---|---|---|
+| 56-61 | 6 MUSA variable assertions | MUSA | All naming vars = `muvs` |
+| 62-67 | 6 CUDA variable assertions | CUDA | All naming vars = `cuvs` (regression) |
+
+**Pass criteria:** All `assert_equal` checks pass.
+
+---
+
 ## Defect Handling
 
 If any test fails:
@@ -189,6 +269,6 @@ If any test fails:
 
 ## Regression Policy
 
-- These tests run on every PR touching `cpp/include/cuvs/core/backend/`, `cpp/cmake/modules/ConfigureBackend.cmake`, or `c/include/cuvs/core/c_api*.h`.
+- These tests run on every PR touching `cpp/include/cuvs/core/backend/`, `cpp/cmake/modules/Configure*.cmake`, `c/include/cuvs/core/c_api*.h`, or `tools/musa/`.
 - Nightly: run full CUDA + MUSA (when available) suite.
 - Golden data: not applicable for adapter tests (behavior contracts only).
